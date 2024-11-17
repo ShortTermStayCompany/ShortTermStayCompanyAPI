@@ -265,6 +265,7 @@ def insert_review():
 @app.route('/report_listings', methods=['GET'])
 def report_listing():
     data = request.get_json()
+    #TODO
 
 
 def drop_database():
