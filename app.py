@@ -108,7 +108,7 @@ class Listing(db.Model):
         Float,
         nullable=False,
     )
-##
+###
 class Booking(db.Model):
     __tablename__ = 'bookings'
     id = db.Column(db.Integer,
