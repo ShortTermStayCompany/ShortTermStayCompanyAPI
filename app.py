@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from models import db  # Importing the database object from models package
 from routes import init_app  # Importing the function to register blueprints
 from flask_jwt_extended import JWTManager
-# from flask_cors import CORS
+from flask_cors import CORS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -39,7 +39,7 @@ def create_app():
     # Register routes
     init_app(app)  # Register the blueprints using the init_app function
 
-    # CORS(app)
+    CORS(app)
 
     @app.route('/ping', methods=['GET'])
     def ping():
