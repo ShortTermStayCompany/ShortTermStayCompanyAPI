@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from jinja2.utils import missing
 
 from Decorators.decorators import require_role
 from models import db, Listing
@@ -14,9 +15,15 @@ def insert_listing():
     current_user_id = get_jwt_identity()
     data = request.get_json()
 
-    required_fields = ['numberOfPeople', 'country', 'city', 'price']
-    if not all(field in data for field in required_fields):
-        return jsonify({'message': 'Missing required fields'}), 400
+    required_fields = ['numberOfPeople', 'country', 'city', 'price','availableFrom','availableTo']
+    missing_fields = []
+
+    for field in required_fields:
+        if field not in data:
+            missing_fields.append(field)
+
+    if missing_fields:
+        return jsonify({'message': f'Missing required fields: {",".join(missing_fields)}'}), 400
 
     listing = Listing(
         user_id=int(current_user_id),
@@ -24,7 +31,9 @@ def insert_listing():
         numberOfPeople=data.get('numberOfPeople', 1),
         country=data['country'],
         city=data['city'],
-        price=data['price']
+        price=data['price'],
+        availableFrom=data['availableFrom'],
+        availableTo=data['availableTo'],
     )
     db.session.add(listing)
     db.session.commit()

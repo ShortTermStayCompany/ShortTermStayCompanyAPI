@@ -1,14 +1,19 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from models import db, Booking
-from datetime import datetime
+from Decorators.decorators import require_role
+from models import db, Booking, listingBookedDates
+from datetime import datetime, timedelta
 
 booking_bp = Blueprint('booking', __name__)
 
 @booking_bp.route('/insert_booking', methods=['POST'])
 @jwt_required()
+@require_role('user')
 def insert_booking():
+
+    current_user_id = get_jwt_identity()
+
     data = request.get_json()
     if 'user_id' not in data:
         return jsonify({'message': 'User ID is required'}), 400
@@ -18,6 +23,8 @@ def insert_booking():
     required_fields = ['dateFrom', 'dateTo', 'namesOfPeople']
     if not all(field in data for field in required_fields):
         return jsonify({'message': 'Missing required fields'}), 400
+
+    ## bookingModel
 
     # Check for overlapping bookings
     existing_bookings = db.session.query(Booking).filter(
@@ -39,6 +46,31 @@ def insert_booking():
         names_of_people=data['namesOfPeople'],
         amountOfPeople=data.get('amountOfPeople', 1)
     )
+
     db.session.add(new_booking)
+
+
+    ## listingBookedDatesModel
+    bookStartDate = data['dateFrom']
+    bookEndDate = data['dateTo']
+    Dates = []
+    # Generate all dates between bookStartDate and bookEndDate
+
+    while bookStartDate <= bookEndDate: # Include end date
+        Dates.append(bookStartDate)
+        bookStartDate += timedelta(days=1)
+
+    print(Dates)
+
+    # Insert dates into listingBookedDates table
+
+    bookedDatesbyListing = []
+    for date in Dates:
+        bookedDatesbyListing.append(Booking(
+            listing_id=data['listing_id'],
+            booked_date=date
+        ))
+    db.session.add_all(bookedDatesbyListing)
+
     db.session.commit()
     return jsonify({'message': 'Booking inserted successfully'}), 201

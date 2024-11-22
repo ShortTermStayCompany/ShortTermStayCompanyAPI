@@ -1,5 +1,5 @@
 from . import db
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, CheckConstraint, Date
 
 class Listing(db.Model):
     __tablename__ = 'listings'
@@ -14,6 +14,9 @@ class Listing(db.Model):
     country = db.Column(String(128), nullable=False)
     city = db.Column(String(128), nullable=False)
     price = db.Column(Float, nullable=False)
+    availableFrom = db.Column(Date, nullable=False)
+    availableTo = db.Column(Date, nullable=False)
+
 
     def to_dict(self):
         return {
@@ -23,4 +26,6 @@ class Listing(db.Model):
             'country': self.country,
             'city': self.city,
             'price': self.price,
+            'availableFrom' : self.availableFrom,
+            'availableTo' : self.availableTo,
         }

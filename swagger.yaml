@@ -1,0 +1,660 @@
+openapi: 3.0.3
+info:
+  title: ShortTermStayCompanyAPI
+  description: API for user registration, authentication, booking, listing management, reviews, and reporting.
+  version: 1.0.0
+servers:
+  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net
+    description: Azure server
+
+paths:
+  /auth/users:
+    post:
+      summary: Register a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+            example:
+              name: Name Surname
+              email: namesurname@email.com
+              password: password123456789A
+              role: guest
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                message: User registered successfully
+        '400':
+          description: Bad Request - Missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    message: Missing required fields
+                userExists:
+                  summary: User already exists
+                  value:
+                    message: User already exists on namesurname@email.com
+
+  /auth/login:
+    post:
+      summary: Authenticate a user and obtain a JWT
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+            example:
+              email: namesurname@email.com
+              password: password123456789A
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+              example:
+                message: User logged in successfully
+                access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+                user:
+                  id: "1"
+                  name: Name Surname
+                  email: namesurname@email.com
+        '400':
+          description: Bad Request - Missing fields, user does not exist, or invalid password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    message: Missing required fields
+                userNotFound:
+                  summary: User does not exist
+                  value:
+                    message: User does not exist
+                invalidPassword:
+                  summary: Invalid password
+                  value:
+                    message: Invalid password
+
+  /booking/insert_booking:
+    post:
+      summary: Book a listing
+      tags:
+        - Booking
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookListingRequest'
+            example:
+              listing_id: 1
+              user_id: 1
+              dateFrom: '2024-12-18'
+              dateTo: '2024-12-22'
+              namesOfPeople: Sarah,Alice,Brian
+              amountOfPeople: 3
+      responses:
+        '201':
+          description: Booking inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                message: Booking inserted successfully
+        '400':
+          description: Bad Request - Missing required fields or booking conflicts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    message: Missing required fields
+                bookingConflict:
+                  summary: Booking conflict
+                  value:
+                    message: Booking already exists on selected dates
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Missing or invalid token
+
+  /insert_listing:
+    post:
+      summary: Insert a new listing
+      tags:
+        - Listing
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Title of the listing
+                numberOfPeople:
+                  type: integer
+                  description: Maximum number of people the listing can accommodate
+                  example: 4
+                country:
+                  type: string
+                  description: Country where the listing is located
+                  example: Wonderland
+                city:
+                  type: string
+                  description: City where the listing is located
+                  example: Heartsville
+                price:
+                  type: number
+                  format: float
+                  description: Price per night for the listing
+                  example: 150.0
+                availableFrom:
+                  type: string
+                  format: date
+                  description: Start date of availability
+                  example: 2024-01-01
+                availableTo:
+                  type: string
+                  format: date
+                  description: End date of availability
+                  example: 2024-12-31
+              required:
+                - numberOfPeople
+                - country
+                - city
+                - price
+                - availableFrom
+                - availableTo
+              example:
+                title: Cozy Apartment
+                numberOfPeople: 4
+                country: Wonderland
+                city: Heartsville
+                price: 150.0
+                availableFrom: 2024-01-01
+                availableTo: 2024-12-31
+      responses:
+        '201':
+          description: Listing inserted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Listing inserted successfully
+        '400':
+          description: Bad Request - Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example:
+                      Missing required fields: numberOfPeople, country
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Missing or invalid token
+        '403':
+          description: Forbidden - User does not have host role
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Access forbidden insufficient permissions
+
+  /listing/listings:
+    get:
+      summary: Retrieve a paginated list of listings
+      tags:
+        - Listing
+      parameters:
+        - name: page
+          in: query
+          description: "Page number (default: 1)"
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: "Listings per page (default: 10, max: 100)"
+          required: false
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+      responses:
+        '200':
+          description: Listings retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetListingsResponse'
+        '400':
+          description: Bad Request - Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidPage:
+                  summary: Invalid page number
+                  value:
+                    message: Page number must be 1 or greater.
+                invalidPerPage:
+                  summary: Invalid per_page value
+                  value:
+                    message: per_page must be between 1 and 100.
+
+  /review/insert_review:
+    post:
+      summary: Insert a review for a stay
+      tags:
+        - Review
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertReviewRequest'
+            example:
+              user_id: 1
+              stay_id: 2
+              rating: 5
+              comment: Excellent stay!
+      responses:
+        '201':
+          description: Review inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              example:
+                message: Review inserted successfully
+        '400':
+          description: Bad Request - Missing required fields or booking does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing required fields
+                  value:
+                    message: Missing required fields
+                bookingNotFound:
+                  summary: Booking does not exist
+                  value:
+                    message: Booking does not exist
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Missing or invalid token
+
+  /report/report_listings:
+    get:
+      summary: Generate a report of listings with average ratings
+      tags:
+        - Report
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: min_rating
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 5
+          description: Minimum average rating to filter listings
+        - in: query
+          name: max_rating
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 5
+          description: Maximum average rating to filter listings
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportListingsResponse'
+        '401':
+          description: Unauthorized - Missing or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: Missing or invalid token
+        '403':
+          description: Forbidden - User does not have admin role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: User does not have the required role
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    UserRegistrationRequest:
+      type: object
+      required:
+        - name
+        - email
+        - password
+        - role
+      properties:
+        name:
+          type: string
+          example: Name Surname
+        email:
+          type: string
+          format: email
+          example: namesurname@email.com
+        password:
+          type: string
+          format: password
+          example: strongpassword123
+        role:
+          type: string
+          enum:
+            - guest
+            - host
+            - admin
+          example: guest
+
+    UserLoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: namesurname@email.com
+        password:
+          type: string
+          format: password
+          example: strongpassword123
+
+    BookListingRequest:
+      type: object
+      required:
+        - listing_id
+        - user_id
+        - dateFrom
+        - dateTo
+        - namesOfPeople
+      properties:
+        listing_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        dateFrom:
+          type: string
+          format: date
+          example: '2024-12-18'
+        dateTo:
+          type: string
+          format: date
+          example: '2024-12-22'
+        namesOfPeople:
+          type: string
+          example: Sarah,Alice,Brian
+        amountOfPeople:
+          type: integer
+          example: 3
+
+    InsertListingRequest:
+      type: object
+      required:
+        - numberOfPeople
+        - country
+        - city
+        - price
+      properties:
+        title:
+          type: string
+          example: Cozy Apartment
+        numberOfPeople:
+          type: integer
+          minimum: 1
+          maximum: 32
+          example: 4
+        country:
+          type: string
+          example: Wonderland
+        city:
+          type: string
+          example: Heartsville
+        price:
+          type: number
+          format: float
+          example: 150.0
+
+    GetListingsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Listing'
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 10
+            total_pages:
+              type: integer
+              example: 5
+            total_items:
+              type: integer
+              example: 50
+            has_next:
+              type: boolean
+              example: true
+            has_prev:
+              type: boolean
+              example: false
+            next_page:
+              type: integer
+              example: 2
+            prev_page:
+              type: integer
+              nullable: true
+              example: null
+
+    InsertReviewRequest:
+      type: object
+      required:
+        - user_id
+        - stay_id
+        - rating
+        - comment
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        stay_id:
+          type: integer
+          example: 2
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        comment:
+          type: string
+          example: Excellent stay!
+
+    ReportListingsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Report generated successfully
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              title:
+                type: string
+                example: Cozy Apartment
+              country:
+                type: string
+                example: Wonderland
+              city:
+                type: string
+                example: Heartsville
+              price:
+                type: number
+                format: float
+                example: 150.0
+              average_rating:
+                type: number
+                format: float
+                example: 4.5
+              review_count:
+                type: integer
+                example: 10
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation completed successfully
+
+    LoginSuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: User logged in successfully
+        access_token:
+          type: string
+          description: JWT access token
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              example: "1"
+            name:
+              type: string
+              example: Name Surname
+            email:
+              type: string
+              format: email
+              example: namesurname@email.com
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Error message detailing what went wrong
+
+    Listing:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: Cozy Apartment
+        numberOfPeople:
+          type: integer
+          minimum: 1
+          maximum: 32
+          example: 4
+        country:
+          type: string
+          example: Wonderland
+        city:
+          type: string
+          example: Heartsville
+        price:
+          type: number
+          format: float
+          example: 150.0
