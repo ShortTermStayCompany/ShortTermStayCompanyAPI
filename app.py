@@ -36,7 +36,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)  # Initialize the database
 
-    # Register routes
+    # #Register routes
     init_app(app)  # Register the blueprints using the init_app function
 
     CORS(app)
