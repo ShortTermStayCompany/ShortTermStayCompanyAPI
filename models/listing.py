@@ -20,6 +20,7 @@ class Listing(db.Model):
 
     def to_dict(self):
         return {
+            'id': self.id,  # Include the listing ID
             'user_id': self.user_id,
             'title': self.title,
             'numberOfPeople': self.numberOfPeople,
