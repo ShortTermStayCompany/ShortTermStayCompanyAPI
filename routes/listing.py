@@ -42,7 +42,6 @@ def insert_listing():
         return jsonify({'message': 'Listing already exists'}), 400
 
     listing = Listing(
-
         user_id=int(current_user_id),
         title=data.get('title', '.'),
         numberOfPeople=data.get('numberOfPeople', 1),
