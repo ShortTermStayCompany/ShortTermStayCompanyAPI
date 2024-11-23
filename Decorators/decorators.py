@@ -18,9 +18,14 @@ def require_role(*roles):
                 return jsonify({'message': 'User not found'}), 404
 
             user_role = user.role.lower()
-            allowed_roles = [role.lower() for role in roles]
+            allowed_roles = []
+            for role in roles:
+                print(role)
+                allowed_roles.append(role.lower())
+
 
             if user_role not in allowed_roles:
+                print()
                 return jsonify({'message': 'Access forbidden: insufficient permissions'}), 403
 
             return fn(*args, **kwargs)

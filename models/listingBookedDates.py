@@ -2,7 +2,7 @@ from . import db
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, CheckConstraint, Date, PrimaryKeyConstraint
 
 
-class Listing(db.Model):
+class ListingBookedDates(db.Model):
     __tablename__ = 'listingBookedDates'
     # id = db.Column(Integer, primary_key=True, autoincrement=True)
     listing_id = db.Column(Integer, ForeignKey('listings.id'))
