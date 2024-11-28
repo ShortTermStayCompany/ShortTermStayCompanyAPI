@@ -55,6 +55,8 @@ def insert_listing():
     db.session.commit()
     return jsonify({'message': 'Listing inserted successfully'}), 201
 
+# added to frontend
+
 @listing_bp.route('/listings', methods=['GET'])
 @jwt_required(optional=True)
 def get_listing():

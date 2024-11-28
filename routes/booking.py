@@ -76,7 +76,9 @@ def insert_booking():
         db.session.add_all(bookedDatesbyListing)
 
         db.session.commit()
-        return jsonify({'message': 'Booking inserted successfully'}), 201
+        return jsonify(
+            {'message': 'Booking inserted successfully'}
+                       ), 201
 
 
     except IntegrityError as e:
@@ -105,7 +107,7 @@ def get_bookings():
     # Convert bookings to a list of dictionaries
     booking_list = [
         {
-            "id": booking.id,
+            "stay_id": booking.id,
             "listing_id": booking.listing_id,
             "date_from": booking.date_from,
             "date_to": booking.date_to,

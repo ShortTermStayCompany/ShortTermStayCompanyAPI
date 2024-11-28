@@ -5,6 +5,7 @@ from flask_jwt_extended import create_access_token
 
 auth_bp = Blueprint('auth', __name__)
 
+# added to frontend
 @auth_bp.route('/users', methods=['POST'])
 def register():
     data = request.get_json()
@@ -33,6 +34,8 @@ def register():
     return jsonify({
         'message': 'User registered successfully'
     }), 201
+
+# added to frontend
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
