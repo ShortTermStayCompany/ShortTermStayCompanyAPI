@@ -1,0 +1,1148 @@
+openapi: 3.0.3
+info:
+  title: ShortTermStayCompanyAPI
+  description: API for user registration, authentication, listing management, booking, reviews, and reporting.
+  version: 1.0.0
+servers:
+  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net
+    description: Azure server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # User Models
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 501
+        name:
+          type: string
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        role:
+          type: string
+          enum: [guest, host, admin]
+          example: "guest"
+      required:
+        - id
+        - name
+        - email
+        - role
+
+    RegisterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Jane Doe"
+        email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        password:
+          type: string
+          format: password
+          example: "StrongP@ssw0rd"
+        role:
+          type: string
+          enum: [guest, host, admin]
+          example: "guest"
+      required:
+        - name
+        - email
+        - password
+        - role
+
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User registered successfully"
+      required:
+        - message
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: "jane.doe@example.com"
+        password:
+          type: string
+          format: password
+          example: "StrongP@ssw0rd"
+      required:
+        - email
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User logged in successfully"
+        access_token:
+          type: string
+          example: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - message
+        - access_token
+        - user
+
+    # Booking Models
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        listing_id:
+          type: integer
+          example: 1
+        issuer_guest_id:
+          type: integer
+          example: 501
+        date_from:
+          type: string
+          format: date
+          example: "2024-12-01"
+        date_to:
+          type: string
+          format: date
+          example: "2024-12-10"
+        names_of_people:
+          type: string
+          example: "John Doe, Jane Smith"
+        amountOfPeople:
+          type: integer
+          example: 2
+      required:
+        - listing_id
+        - issuer_guest_id
+        - date_from
+        - date_to
+        - names_of_people
+
+    InsertBookingRequest:
+      type: object
+      properties:
+        listing_id:
+          type: integer
+          example: 101
+        dateFrom:
+          type: string
+          format: date
+          example: "2024-12-01"
+        dateTo:
+          type: string
+          format: date
+          example: "2024-12-10"
+        namesOfPeople:
+          type: string
+          example: "John Doe, Jane Smith"
+        amountOfPeople:
+          type: integer
+          example: 2
+      required:
+        - listing_id
+        - dateFrom
+        - dateTo
+        - namesOfPeople
+
+    # Listing Models
+    Listing:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        user_id:
+          type: integer
+          example: 501
+        title:
+          type: string
+          example: "Cozy Apartment in Downtown"
+        numberOfPeople:
+          type: integer
+          example: 4
+          minimum: 1
+          maximum: 32
+        country:
+          type: string
+          example: "UAE"
+        city:
+          type: string
+          example: "Dubai"
+        price:
+          type: number
+          format: float
+          example: 150.75
+        availableFrom:
+          type: string
+          format: date
+          example: "2024-12-01"
+        availableTo:
+          type: string
+          format: date
+          example: "2025-01-15"
+      required:
+        - user_id
+        - numberOfPeople
+        - country
+        - city
+        - price
+        - availableFrom
+        - availableTo
+
+    InsertListingRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "Cozy Apartment in Downtown"
+        numberOfPeople:
+          type: integer
+          example: 4
+          minimum: 1
+          maximum: 32
+        country:
+          type: string
+          example: "UAE"
+        city:
+          type: string
+          example: "Dubai"
+        price:
+          type: number
+          format: float
+          example: 150.75
+        availableFrom:
+          type: string
+          format: date
+          example: "2024-12-01"
+        availableTo:
+          type: string
+          format: date
+          example: "2025-01-15"
+      required:
+        - numberOfPeople
+        - country
+        - city
+        - price
+        - availableFrom
+        - availableTo
+
+    ListingBookedDates:
+      type: object
+      properties:
+        listing_id:
+          type: integer
+          example: 101
+        booked_date:
+          type: string
+          format: date
+          example: "2024-12-05"
+      required:
+        - listing_id
+        - booked_date
+
+    # Review Models
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1001
+        stay_id:
+          type: integer
+          example: 1
+        guest_id:
+          type: integer
+          example: 501
+        rating:
+          type: integer
+          example: 5
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          example: "Great place to stay!"
+      required:
+        - stay_id
+        - guest_id
+        - rating
+
+    InsertReviewRequest:
+      type: object
+      properties:
+        stay_id:
+          type: integer
+          example: 1
+        rating:
+          type: integer
+          example: 5
+          minimum: 1
+          maximum: 5
+        comment:
+          type: string
+          example: "Great place to stay!"
+      required:
+        - stay_id
+        - rating
+        - comment
+
+    # Report Models
+    ListingReport:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        title:
+          type: string
+          example: "Cozy Apartment in Downtown"
+        country:
+          type: string
+          example: "UAE"
+        city:
+          type: string
+          example: "Dubai"
+        price:
+          type: number
+          format: float
+          example: 150.75
+        average_rating:
+          type: number
+          format: float
+          example: 4.5
+        review_count:
+          type: integer
+          example: 10
+      required:
+        - id
+        - title
+        - country
+        - city
+        - price
+        - average_rating
+        - review_count
+
+    ReportResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Report generated successfully"
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListingReport'
+      required:
+        - message
+        - data
+
+    # Response Models
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Error message describing what went wrong."
+        error:
+          type: string
+          example: "Detailed error information."
+      required:
+        - message
+        - error
+      oneOf:
+        - description: Missing required fields
+          properties:
+            message:
+              example: "Missing required fields"
+            error:
+              example: "The 'stay_id' field is required."
+        - description: Booking does not exist
+          properties:
+            message:
+              example: "Booking does not exist"
+            error:
+              example: "No booking found with stay_id '10'."
+        - description: Invalid rating value
+          properties:
+            message:
+              example: "Invalid rating value"
+            error:
+              example: "Rating must be between 1 and 5."
+        - description: Unauthorized access
+          properties:
+            message:
+              example: "Unauthorized"
+            error:
+              example: "Missing or invalid JWT token."
+        - description: Forbidden access
+          properties:
+            message:
+              example: "Forbidden"
+            error:
+              example: "You do not have permission to access this resource."
+        - description: Internal server error
+          properties:
+            message:
+              example: "Internal server error"
+            error:
+              example: "An unexpected error occurred."
+
+    SuccessResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Operation was successful."
+      required:
+        - message
+
+    BookingsResponse:
+      type: object
+      properties:
+        bookings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Booking'
+      required:
+        - bookings
+
+    ListingsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 101
+              user_id:
+                type: integer
+                example: 501
+              title:
+                type: string
+                example: "Cozy Apartment in Downtown"
+              numberOfPeople:
+                type: integer
+                example: 4
+              country:
+                type: string
+                example: "UAE"
+              city:
+                type: string
+                example: "Dubai"
+              price:
+                type: number
+                format: float
+                example: 150.75
+              availableFrom:
+                type: string
+                format: date
+                example: "2024-12-01"
+              availableTo:
+                type: string
+                format: date
+                example: "2025-01-15"
+              unavailableDates:
+                type: array
+                items:
+                  type: string
+                  format: date
+                  example: "2024-12-05"
+              averageRating:
+                type: number
+                format: float
+                example: 4.5
+        meta:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 10
+            total_pages:
+              type: integer
+              example: 5
+            total_items:
+              type: integer
+              example: 50
+            has_next:
+              type: boolean
+              example: true
+            has_prev:
+              type: boolean
+              example: false
+            next_page:
+              type: integer
+              example: 2
+            prev_page:
+              type: integer
+              nullable: true
+              example: null
+
+paths:
+  /auth/users:
+    post:
+      summary: Register a new user
+      description: Allows a new user to register by providing their details.
+      tags:
+        - Authentication
+      requestBody:
+        description: User registration details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            examples:
+              guestUser:
+                summary: Guest User Registration
+                value:
+                  name: "Emily Carter"
+                  email: "emily.carter@example.com"
+                  password: "GuestPass123!"
+                  role: "guest"
+              hostUser:
+                summary: Host User Registration
+                value:
+                  name: "Michael Brown"
+                  email: "michael.brown@example.com"
+                  password: "HostPass456#"
+                  role: "host"
+              adminUser:
+                summary: Admin User Registration
+                value:
+                  name: "Sophia Davis"
+                  email: "sophia.davis@example.com"
+                  password: "AdminPass789$"
+                  role: "admin"
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+              examples:
+                success:
+                  summary: Successful Registration
+                  value:
+                    message: "User registered successfully"
+        '400':
+          description: Bad Request - Missing fields or user already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing Required Fields
+                  value:
+                    message: "Missing required fields"
+                    error: "The 'email' field is required."
+                userExists:
+                  summary: User Already Exists
+                  value:
+                    message: "User already exists"
+                    error: "A user with email 'jane.doe@example.com' already exists."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  /auth/login:
+    post:
+      summary: User login
+      description: Authenticates a user and returns a JWT access token.
+      tags:
+        - Authentication
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            examples:
+              guestUser:
+                summary: Guest User Login
+                value:
+                  email: "emily.carter@example.com"
+                  password: "GuestPass123!"
+              hostUser:
+                summary: Host User Login
+                value:
+                  email: "michael.brown@example.com"
+                  password: "HostPass456#"
+              adminUser:
+                summary: Admin Login
+                value:
+                  email: "sophia.davis@example.com"
+                  password: "AdminPass789$"
+      responses:
+        '200':
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              examples:
+                success:
+                  summary: Successful Login
+                  value:
+                    message: "User logged in successfully"
+                    access_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                    user:
+                      id: 501
+                      name: "Jane Doe"
+                      email: "jane.doe@example.com"
+                      role: "guest"
+        '400':
+          description: Bad Request - Missing fields or invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing Required Fields
+                  value:
+                    message: "Missing required fields"
+                    error: "The 'password' field is required."
+                userNotFound:
+                  summary: User Does Not Exist
+                  value:
+                    message: "User does not exist"
+                    error: "No user found with email 'unknown@example.com'."
+                invalidPassword:
+                  summary: Invalid Password
+                  value:
+                    message: "Invalid credentials"
+                    error: "The provided password is incorrect."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  # Booking Endpoints
+  /booking/insert_booking:
+    post:
+      summary: Insert a new booking
+      description: Allows a guest to create a new booking for a listing.
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Booking details to be inserted
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertBookingRequest'
+      responses:
+        '201':
+          description: Booking inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  summary: Successful Booking
+                  value:
+                    message: "Booking inserted successfully"
+        '400':
+          description: Bad Request - Invalid input or booking conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                bookingConflict:
+                  summary: Booking Conflict
+                  value:
+                    message: "Booking already exists on selected dates"
+                    error: "The listing is already booked from 2024-12-05 to 2024-12-10."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  /booking/get_bookings:
+    get:
+      summary: Get all bookings for the current user
+      description: Retrieves a list of all bookings made by the authenticated user.
+      tags:
+        - Bookings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of bookings
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingsResponse'
+              examples:
+                success:
+                  summary: Successful Retrieval
+                  value:
+                    bookings:
+                      - id: 1
+                        listing_id: 101
+                        issuer_guest_id: 501
+                        date_from: "2024-12-01"
+                        date_to: "2024-12-10"
+                        names_of_people: "John Doe, Jane Smith"
+                        amountOfPeople: 2
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  # Listing Endpoints
+  /listing/insert_listing:
+    post:
+      summary: Insert a new listing
+      description: Allows a host to create a new property listing.
+      tags:
+        - Listings
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Listing details to be inserted
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertListingRequest'
+      responses:
+        '201':
+          description: Listing inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  summary: Successful Listing
+                  value:
+                    message: "Listing inserted successfully"
+        '400':
+          description: Bad Request - Invalid input or listing already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                listingExists:
+                  summary: Listing Already Exists
+                  value:
+                    message: "Listing already exists"
+                    error: "A listing with the same details already exists."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  /listing/listings:
+    get:
+      summary: Get a paginated list of listings
+      description: Retrieve a paginated list of listings, including unavailable dates and average ratings.
+      tags:
+        - Listings
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: "Page number (default: 1)"
+        - in: query
+          name: per_page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+          description: "Listings per page (default: 10, max: 100)"
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of listings with pagination metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListingsResponse'
+              examples:
+                success:
+                  summary: Successful Retrieval
+                  value:
+                    data:
+                      - id: 101
+                        user_id: 501
+                        title: "Cozy Apartment in Downtown"
+                        numberOfPeople: 4
+                        country: "UAE"
+                        city: "Dubai"
+                        price: 150.75
+                        availableFrom: "2024-12-01"
+                        availableTo: "2025-01-15"
+                        unavailableDates:
+                          - "2024-12-05"
+                        averageRating: 4.5
+                      - id: 102
+                        user_id: 502
+                        title: "Modern Villa by the Beach"
+                        numberOfPeople: 6
+                        country: "UAE"
+                        city: "Abu Dhabi"
+                        price: 300.00
+                        availableFrom: "2024-11-15"
+                        availableTo: "2025-02-28"
+                        unavailableDates:
+                          - "2024-12-20"
+                          - "2025-01-10"
+                        averageRating: 4.8
+                    meta:
+                      page: 1
+                      per_page: 10
+                      total_pages: 5
+                      total_items: 50
+                      has_next: true
+                      has_prev: false
+                      next_page: 2
+                      prev_page: null
+        '400':
+          description: Bad Request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidPage:
+                  summary: Invalid Page Number
+                  value:
+                    message: "Bad Request"
+                    error: "Page number must be 1 or greater."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  # Review Endpoints
+  /review/insert_review:
+    post:
+      summary: Insert a new review
+      description: Allows a guest to submit a review for a completed booking.
+      tags:
+        - Reviews
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: Review details to be inserted
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertReviewRequest'
+      responses:
+        '201':
+          description: Review inserted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+              examples:
+                success:
+                  summary: Successful Review Insertion
+                  value:
+                    message: "Review inserted successfully"
+        '400':
+          description: Bad Request - Missing fields, invalid input, or booking does not exist
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missingFields:
+                  summary: Missing Required Fields
+                  value:
+                    message: "Missing required fields"
+                    error: "The 'stay_id' field is required."
+                bookingNotFound:
+                  summary: Booking Does Not Exist
+                  value:
+                    message: "Booking does not exist"
+                    error: "No booking found with stay_id '10'."
+                invalidRating:
+                  summary: Invalid Rating Value
+                  value:
+                    message: "Invalid rating value"
+                    error: "Rating must be between 1 and 5."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Internal Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+  # Report Endpoints
+  /report/report_listings:
+    get:
+      summary: Generate Listings Report
+      description: Generates a report of listings with average ratings and review counts. Accessible only by admin users.
+      tags:
+        - Reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: min_rating
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 5
+          description: "Minimum average rating to filter listings"
+        - in: query
+          name: max_rating
+          schema:
+            type: number
+            format: float
+            minimum: 1
+            maximum: 5
+          description: "Maximum average rating to filter listings"
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+              examples:
+                success:
+                  summary: Successful Report Generation
+                  value:
+                    message: "Report generated successfully"
+                    data:
+                      - id: 101
+                        title: "Cozy Apartment in Downtown"
+                        country: "UAE"
+                        city: "Dubai"
+                        price: 150.75
+                        average_rating: 4.5
+                        review_count: 10
+                      - id: 102
+                        title: "Modern Villa by the Beach"
+                        country: "UAE"
+                        city: "Abu Dhabi"
+                        price: 300.00
+                        average_rating: 4.8
+                        review_count: 15
+        '400':
+          description: Bad Request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidMinRating:
+                  summary: Invalid Minimum Rating
+                  value:
+                    message: "Bad Request"
+                    error: "min_rating must be between 1 and 5."
+                invalidMaxRating:
+                  summary: Invalid Maximum Rating
+                  value:
+                    message: "Bad Request"
+                    error: "max_rating must be between 1 and 5."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Forbidden Access
+                  value:
+                    message: "Forbidden"
+                    error: "You do not have permission to access this resource."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Internal Server Error
+                  value:
+                    message: "Internal server error"
+                    error: "An unexpected error occurred."
+
+tags:
+  - name: Authentication
+    description: Endpoints related to user registration and authentication.
+  - name: Bookings
+    description: Endpoints related to booking management.
+  - name: Listings
+    description: Endpoints related to listing management.
+  - name: Reviews
+    description: Endpoints related to review management.
+  - name: Reports
+    description: Endpoints related to reporting and analytics.
