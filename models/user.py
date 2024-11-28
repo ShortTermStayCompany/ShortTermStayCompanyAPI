@@ -1,6 +1,6 @@
 from . import db
 from sqlalchemy import Column, Integer, String, CheckConstraint
-
+#
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(Integer, primary_key=True, autoincrement=True)
