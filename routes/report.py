@@ -7,14 +7,12 @@ from models import db, Listing, Review, Booking
 
 report_bp = Blueprint('report', __name__)
 
-
 @report_bp.route('/report_listings', methods=['GET'])
 @jwt_required()
 @require_role('admin')
 def report_listings():
-
-    min_rating = request.args.get('min_rating', type=float)
-    max_rating = request.args.get('max_rating', type=float)
+    country = request.args.get('country', type=str)
+    city = request.args.get('city', type=str)
 
     query = (
         db.session.query(
@@ -35,12 +33,13 @@ def report_listings():
             Listing.city,
             Listing.price
         )  # Group by all selected columns from Listing
+        .order_by(func.avg(Review.rating).desc())  # Order by average rating in descending order
     )
 
-    if min_rating is not None:
-        query = query.having(func.avg(Review.rating) >= min_rating)
-    if max_rating is not None:
-        query = query.having(func.avg(Review.rating) <= max_rating)
+    if country:
+        query = query.filter(Listing.country == country)
+    if city:
+        query = query.filter(Listing.city == city)
 
     results = query.all()
 

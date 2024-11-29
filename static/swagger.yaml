@@ -1028,112 +1028,105 @@ paths:
                     message: "Internal server error"
                     error: "An unexpected error occurred."
 
-  # Report Endpoints
   /report/report_listings:
-    get:
-      summary: Generate Listings Report
-      description: Generates a report of listings with average ratings and review counts. Accessible only by admin users.
-      tags:
-        - Reports
-      security:
-        - bearerAuth: []
-      parameters:
-        - in: query
-          name: min_rating
-          schema:
-            type: number
-            format: float
-            minimum: 1
-            maximum: 5
-          description: "Minimum average rating to filter listings"
-        - in: query
-          name: max_rating
-          schema:
-            type: number
-            format: float
-            minimum: 1
-            maximum: 5
-          description: "Maximum average rating to filter listings"
-      responses:
-        '200':
-          description: Report generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReportResponse'
-              examples:
-                success:
-                  summary: Successful Report Generation
-                  value:
-                    message: "Report generated successfully"
-                    data:
-                      - id: 101
-                        title: "Cozy Apartment in Downtown"
-                        country: "UAE"
-                        city: "Dubai"
-                        price: 150.75
-                        average_rating: 4.5
-                        review_count: 10
-                      - id: 102
-                        title: "Modern Villa by the Beach"
-                        country: "UAE"
-                        city: "Abu Dhabi"
-                        price: 300.00
-                        average_rating: 4.8
-                        review_count: 15
-        '400':
-          description: Bad Request - Invalid query parameters
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                invalidMinRating:
-                  summary: Invalid Minimum Rating
-                  value:
-                    message: "Bad Request"
-                    error: "min_rating must be between 1 and 5."
-                invalidMaxRating:
-                  summary: Invalid Maximum Rating
-                  value:
-                    message: "Bad Request"
-                    error: "max_rating must be between 1 and 5."
-        '401':
-          description: Unauthorized - Missing or invalid JWT token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorized:
-                  summary: Unauthorized Access
-                  value:
-                    message: "Unauthorized"
-                    error: "Missing or invalid JWT token."
-        '403':
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                forbidden:
-                  summary: Forbidden Access
-                  value:
-                    message: "Forbidden"
-                    error: "You do not have permission to access this resource."
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                serverError:
-                  summary: Internal Server Error
-                  value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+      get:
+        summary: Generate Listings Report by Location
+        description: Generates a report of listings filtered by country and city with average ratings and review counts. Accessible only by admin users.
+        tags:
+          - Reports
+        security:
+          - bearerAuth: []
+        parameters:
+          - in: query
+            name: country
+            schema:
+              type: string
+            description: "Filter listings by country (optional)"
+          - in: query
+            name: city
+            schema:
+              type: string
+            description: "Filter listings by city (optional)"
+        responses:
+          '200':
+            description: Report generated successfully
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ReportResponse'
+                examples:
+                  success:
+                    summary: Successful Report Generation
+                    value:
+                      message: "Report generated successfully"
+                      data:
+                        - id: 101
+                          title: "Cozy Apartment in Downtown"
+                          country: "UAE"
+                          city: "Dubai"
+                          price: 150.75
+                          average_rating: 4.5
+                          review_count: 10
+                        - id: 102
+                          title: "Modern Villa by the Beach"
+                          country: "UAE"
+                          city: "Abu Dhabi"
+                          price: 300.00
+                          average_rating: 4.8
+                          review_count: 15
+          '400':
+            description: Bad Request - Invalid query parameters
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  invalidCountry:
+                    summary: Invalid Country Parameter
+                    value:
+                      message: "Bad Request"
+                      error: "Invalid country parameter provided."
+                  invalidCity:
+                    summary: Invalid City Parameter
+                    value:
+                      message: "Bad Request"
+                      error: "Invalid city parameter provided."
+          '401':
+            description: Unauthorized - Missing or invalid JWT token
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  unauthorized:
+                    summary: Unauthorized Access
+                    value:
+                      message: "Unauthorized"
+                      error: "Missing or invalid JWT token."
+          '403':
+            description: Forbidden - Insufficient permissions
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  forbidden:
+                    summary: Forbidden Access
+                    value:
+                      message: "Forbidden"
+                      error: "You do not have permission to access this resource."
+          '500':
+            description: Internal Server Error
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/ErrorResponse'
+                examples:
+                  serverError:
+                    summary: Internal Server Error
+                    value:
+                      message: "Internal server error"
+                      error: "An unexpected error occurred."
 
 tags:
   - name: Authentication
