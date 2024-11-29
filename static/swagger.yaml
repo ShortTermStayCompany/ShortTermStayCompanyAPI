@@ -4,8 +4,8 @@ info:
   description: API for user registration, authentication, listing management, booking, reviews, and reporting.
   version: 1.0.0
 servers:
-  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net
-    description: Azure server
+  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net/v1
+    description: Azure server - Version 1
 
 security:
   - bearerAuth: []
@@ -106,110 +106,9 @@ components:
         - access_token
         - user
 
-    # Booking Models
-    Booking:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        listing_id:
-          type: integer
-          example: 1
-        issuer_guest_id:
-          type: integer
-          example: 501
-        date_from:
-          type: string
-          format: date
-          example: "2024-12-01"
-        date_to:
-          type: string
-          format: date
-          example: "2024-12-10"
-        names_of_people:
-          type: string
-          example: "John Doe, Jane Smith"
-        amountOfPeople:
-          type: integer
-          example: 2
-      required:
-        - listing_id
-        - issuer_guest_id
-        - date_from
-        - date_to
-        - names_of_people
 
-    InsertBookingRequest:
-      type: object
-      properties:
-        listing_id:
-          type: integer
-          example: 101
-        dateFrom:
-          type: string
-          format: date
-          example: "2024-12-01"
-        dateTo:
-          type: string
-          format: date
-          example: "2024-12-10"
-        namesOfPeople:
-          type: string
-          example: "John Doe, Jane Smith"
-        amountOfPeople:
-          type: integer
-          example: 2
-      required:
-        - listing_id
-        - dateFrom
-        - dateTo
-        - namesOfPeople
 
-    # Listing Models
-    Listing:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 101
-        user_id:
-          type: integer
-          example: 501
-        title:
-          type: string
-          example: "Cozy Apartment in Downtown"
-        numberOfPeople:
-          type: integer
-          example: 4
-          minimum: 1
-          maximum: 32
-        country:
-          type: string
-          example: "UAE"
-        city:
-          type: string
-          example: "Dubai"
-        price:
-          type: number
-          format: float
-          example: 150.75
-        availableFrom:
-          type: string
-          format: date
-          example: "2024-12-01"
-        availableTo:
-          type: string
-          format: date
-          example: "2025-01-15"
-      required:
-        - user_id
-        - numberOfPeople
-        - country
-        - city
-        - price
-        - availableFrom
-        - availableTo
+
 
     InsertListingRequest:
       type: object
@@ -247,46 +146,6 @@ components:
         - price
         - availableFrom
         - availableTo
-
-    ListingBookedDates:
-      type: object
-      properties:
-        listing_id:
-          type: integer
-          example: 101
-        booked_date:
-          type: string
-          format: date
-          example: "2024-12-05"
-      required:
-        - listing_id
-        - booked_date
-
-    # Review Models
-    Review:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1001
-        stay_id:
-          type: integer
-          example: 1
-        guest_id:
-          type: integer
-          example: 501
-        rating:
-          type: integer
-          example: 5
-          minimum: 1
-          maximum: 5
-        comment:
-          type: string
-          example: "Great place to stay!"
-      required:
-        - stay_id
-        - guest_id
-        - rating
 
     InsertReviewRequest:
       type: object
@@ -370,43 +229,6 @@ components:
       required:
         - message
         - error
-      oneOf:
-        - description: Missing required fields
-          properties:
-            message:
-              example: "Missing required fields"
-            error:
-              example: "The 'stay_id' field is required."
-        - description: Booking does not exist
-          properties:
-            message:
-              example: "Booking does not exist"
-            error:
-              example: "No booking found with stay_id '10'."
-        - description: Invalid rating value
-          properties:
-            message:
-              example: "Invalid rating value"
-            error:
-              example: "Rating must be between 1 and 5."
-        - description: Unauthorized access
-          properties:
-            message:
-              example: "Unauthorized"
-            error:
-              example: "Missing or invalid JWT token."
-        - description: Forbidden access
-          properties:
-            message:
-              example: "Forbidden"
-            error:
-              example: "You do not have permission to access this resource."
-        - description: Internal server error
-          properties:
-            message:
-              example: "Internal server error"
-            error:
-              example: "An unexpected error occurred."
 
     SuccessResponse:
       type: object
@@ -416,16 +238,6 @@ components:
           example: "Operation was successful."
       required:
         - message
-
-    BookingsResponse:
-      type: object
-      properties:
-        bookings:
-          type: array
-          items:
-            $ref: '#/components/schemas/Booking'
-      required:
-        - bookings
 
     ListingsResponse:
       type: object
@@ -475,6 +287,15 @@ components:
                 type: number
                 format: float
                 example: 4.5
+          required:
+            - id
+            - user_id
+            - numberOfPeople
+            - country
+            - city
+            - price
+            - availableFrom
+            - availableTo
         meta:
           type: object
           properties:
@@ -563,11 +384,11 @@ paths:
                   summary: Missing Required Fields
                   value:
                     message: "Missing required fields"
-                    error: "The 'email' field is required."
+                    error: "Missing required fields: email, password"
                 userExists:
                   summary: User Already Exists
                   value:
-                    message: "User already exists"
+                    message: "User already exists on jane.doe@example.com"
                     error: "A user with email 'jane.doe@example.com' already exists."
         '500':
           description: Internal Server Error
@@ -579,8 +400,8 @@ paths:
                 serverError:
                   summary: Server Error
                   value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
   /auth/login:
     post:
@@ -640,7 +461,7 @@ paths:
                   summary: Missing Required Fields
                   value:
                     message: "Missing required fields"
-                    error: "The 'password' field is required."
+                    error: "Missing required fields: email, password"
                 userNotFound:
                   summary: User Does Not Exist
                   value:
@@ -649,7 +470,7 @@ paths:
                 invalidPassword:
                   summary: Invalid Password
                   value:
-                    message: "Invalid credentials"
+                    message: "Invalid password"
                     error: "The provided password is incorrect."
         '500':
           description: Internal Server Error
@@ -661,125 +482,8 @@ paths:
                 serverError:
                   summary: Server Error
                   value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
-
-  # Booking Endpoints
-  /booking/insert_booking:
-    post:
-      summary: Insert a new booking
-      description: Allows a guest to create a new booking for a listing.
-      tags:
-        - Bookings
-      security:
-        - bearerAuth: []
-      requestBody:
-        description: Booking details to be inserted
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InsertBookingRequest'
-      responses:
-        '201':
-          description: Booking inserted successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-              examples:
-                success:
-                  summary: Successful Booking
-                  value:
-                    message: "Booking inserted successfully"
-        '400':
-          description: Bad Request - Invalid input or booking conflict
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                bookingConflict:
-                  summary: Booking Conflict
-                  value:
-                    message: "Booking already exists on selected dates"
-                    error: "The listing is already booked from 2024-12-05 to 2024-12-10."
-        '401':
-          description: Unauthorized - Missing or invalid JWT token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorized:
-                  summary: Unauthorized Access
-                  value:
-                    message: "Unauthorized"
-                    error: "Missing or invalid JWT token."
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                serverError:
-                  summary: Server Error
-                  value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
-
-  /booking/get_bookings:
-    get:
-      summary: Get all bookings for the current user
-      description: Retrieves a list of all bookings made by the authenticated user.
-      tags:
-        - Bookings
-      security:
-        - bearerAuth: []
-      responses:
-        '200':
-          description: A list of bookings
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookingsResponse'
-              examples:
-                success:
-                  summary: Successful Retrieval
-                  value:
-                    bookings:
-                      - id: 1
-                        listing_id: 101
-                        issuer_guest_id: 501
-                        date_from: "2024-12-01"
-                        date_to: "2024-12-10"
-                        names_of_people: "John Doe, Jane Smith"
-                        amountOfPeople: 2
-        '401':
-          description: Unauthorized - Missing or invalid JWT token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorized:
-                  summary: Unauthorized Access
-                  value:
-                    message: "Unauthorized"
-                    error: "Missing or invalid JWT token."
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                serverError:
-                  summary: Server Error
-                  value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
   # Listing Endpoints
   /listing/insert_listing:
@@ -797,6 +501,25 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InsertListingRequest'
+            examples:
+              validListing:
+                summary: Valid Listing
+                value:
+                  title: "Beachfront Villa"
+                  numberOfPeople: 8
+                  country: "UAE"
+                  city: "Abu Dhabi"
+                  price: 500.00
+                  availableFrom: "2024-12-01"
+                  availableTo: "2025-01-15"
+              missingFields:
+                summary: Missing Required Fields
+                value:
+                  country: "UAE"
+                  city: "Dubai"
+                  price: 150.75
+                  availableFrom: "2024-12-01"
+                  availableTo: "2025-01-15"
       responses:
         '201':
           description: Listing inserted successfully
@@ -806,21 +529,26 @@ paths:
                 $ref: '#/components/schemas/SuccessResponse'
               examples:
                 success:
-                  summary: Successful Listing
+                  summary: Successful Listing Insertion
                   value:
                     message: "Listing inserted successfully"
         '400':
-          description: Bad Request - Invalid input or listing already exists
+          description: Bad Request - Missing fields or listing already exists
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
+                missingFields:
+                  summary: Missing Required Fields
+                  value:
+                    message: "Missing required fields: numberOfPeople"
+                    error: "Required fields are missing."
                 listingExists:
                   summary: Listing Already Exists
                   value:
                     message: "Listing already exists"
-                    error: "A listing with the same details already exists."
+                    error: "A listing with these details already exists."
         '401':
           description: Unauthorized - Missing or invalid JWT token
           content:
@@ -833,6 +561,18 @@ paths:
                   value:
                     message: "Unauthorized"
                     error: "Missing or invalid JWT token."
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Forbidden Access
+                  value:
+                    message: "Forbidden"
+                    error: "User does not have the required role."
         '500':
           description: Internal Server Error
           content:
@@ -843,8 +583,8 @@ paths:
                 serverError:
                   summary: Server Error
                   value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
   /listing/listings:
     get:
@@ -899,7 +639,7 @@ paths:
                         title: "Modern Villa by the Beach"
                         numberOfPeople: 6
                         country: "UAE"
-                        city: "Dubai"
+                        city: "Abu Dhabi"
                         price: 300.00
                         availableFrom: "2024-11-15"
                         availableTo: "2025-02-28"
@@ -926,20 +666,13 @@ paths:
                 invalidPage:
                   summary: Invalid Page Number
                   value:
-                    message: "Bad Request"
-                    error: "Page number must be 1 or greater."
-        '401':
-          description: Unauthorized - Missing or invalid JWT token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                unauthorized:
-                  summary: Unauthorized Access
+                    message: "Page number must be 1 or greater."
+                    error: "Invalid page parameter."
+                invalidPerPage:
+                  summary: Invalid per_page Number
                   value:
-                    message: "Unauthorized"
-                    error: "Missing or invalid JWT token."
+                    message: "per_page must be between 1 and 100."
+                    error: "Invalid per_page parameter."
         '500':
           description: Internal Server Error
           content:
@@ -950,8 +683,8 @@ paths:
                 serverError:
                   summary: Server Error
                   value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
   # Review Endpoints
   /review/insert_review:
@@ -969,6 +702,18 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/InsertReviewRequest'
+            examples:
+              validReview:
+                summary: Valid Review
+                value:
+                  stay_id: 1
+                  rating: 5
+                  comment: "Great place to stay!"
+              missingFields:
+                summary: Missing Required Fields
+                value:
+                  stay_id: 1
+                  comment: "Great place to stay!"
       responses:
         '201':
           description: Review inserted successfully
@@ -982,7 +727,7 @@ paths:
                   value:
                     message: "Review inserted successfully"
         '400':
-          description: Bad Request - Missing fields, invalid input, or booking does not exist
+          description: Bad Request - Missing fields or booking does not exist
           content:
             application/json:
               schema:
@@ -992,17 +737,12 @@ paths:
                   summary: Missing Required Fields
                   value:
                     message: "Missing required fields"
-                    error: "The 'stay_id' field is required."
+                    error: "Missing required fields: rating, comment"
                 bookingNotFound:
                   summary: Booking Does Not Exist
                   value:
                     message: "Booking does not exist"
                     error: "No booking found with stay_id '10'."
-                invalidRating:
-                  summary: Invalid Rating Value
-                  value:
-                    message: "Invalid rating value"
-                    error: "Rating must be between 1 and 5."
         '401':
           description: Unauthorized - Missing or invalid JWT token
           content:
@@ -1015,6 +755,18 @@ paths:
                   value:
                     message: "Unauthorized"
                     error: "Missing or invalid JWT token."
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Forbidden Access
+                  value:
+                    message: "Forbidden"
+                    error: "User does not have the required role."
         '500':
           description: Internal Server Error
           content:
@@ -1023,116 +775,117 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
               examples:
                 serverError:
-                  summary: Internal Server Error
+                  summary: Server Error
                   value:
-                    message: "Internal server error"
-                    error: "An unexpected error occurred."
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
+  # Report Endpoints
   /report/report_listings:
-      get:
-        summary: Generate Listings Report by Location
-        description: Generates a report of listings filtered by country and city with average ratings and review counts. Accessible only by admin users.
-        tags:
-          - Reports
-        security:
-          - bearerAuth: []
-        parameters:
-          - in: query
-            name: country
-            schema:
-              type: string
-            description: "Filter listings by country (optional)"
-          - in: query
-            name: city
-            schema:
-              type: string
-            description: "Filter listings by city (optional)"
-        responses:
-          '200':
-            description: Report generated successfully
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ReportResponse'
-                examples:
-                  success:
-                    summary: Successful Report Generation
-                    value:
-                      message: "Report generated successfully"
-                      data:
-                        - id: 101
-                          title: "Cozy Apartment in Downtown"
-                          country: "UAE"
-                          city: "Dubai"
-                          price: 150.75
-                          average_rating: 4.5
-                          review_count: 10
-                        - id: 102
-                          title: "Modern Villa by the Beach"
-                          country: "UAE"
-                          city: "Abu Dhabi"
-                          price: 300.00
-                          average_rating: 4.8
-                          review_count: 15
-          '400':
-            description: Bad Request - Invalid query parameters
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  invalidCountry:
-                    summary: Invalid Country Parameter
-                    value:
-                      message: "Bad Request"
-                      error: "Invalid country parameter provided."
-                  invalidCity:
-                    summary: Invalid City Parameter
-                    value:
-                      message: "Bad Request"
-                      error: "Invalid city parameter provided."
-          '401':
-            description: Unauthorized - Missing or invalid JWT token
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  unauthorized:
-                    summary: Unauthorized Access
-                    value:
-                      message: "Unauthorized"
-                      error: "Missing or invalid JWT token."
-          '403':
-            description: Forbidden - Insufficient permissions
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  forbidden:
-                    summary: Forbidden Access
-                    value:
-                      message: "Forbidden"
-                      error: "You do not have permission to access this resource."
-          '500':
-            description: Internal Server Error
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/ErrorResponse'
-                examples:
-                  serverError:
-                    summary: Internal Server Error
-                    value:
-                      message: "Internal server error"
-                      error: "An unexpected error occurred."
+    get:
+      summary: Generate Listings Report by Location
+      description: >-
+        Generates a report of listings filtered by country and city with average
+        ratings and review counts. Accessible only by admin users.
+      tags:
+        - Reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: country
+          schema:
+            type: string
+          description: "Filter listings by country (optional)"
+        - in: query
+          name: city
+          schema:
+            type: string
+          description: "Filter listings by city (optional)"
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+              examples:
+                success:
+                  summary: Successful Report Generation
+                  value:
+                    message: "Report generated successfully"
+                    data:
+                      - id: 101
+                        title: "Cozy Apartment in Downtown"
+                        country: "UAE"
+                        city: "Dubai"
+                        price: 150.75
+                        average_rating: 4.5
+                        review_count: 10
+                      - id: 102
+                        title: "Modern Villa by the Beach"
+                        country: "UAE"
+                        city: "Abu Dhabi"
+                        price: 300.00
+                        average_rating: 4.8
+                        review_count: 15
+        '400':
+          description: Bad Request - Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCountry:
+                  summary: Invalid Country Parameter
+                  value:
+                    message: "Bad Request"
+                    error: "Invalid country parameter provided."
+                invalidCity:
+                  summary: Invalid City Parameter
+                  value:
+                    message: "Bad Request"
+                    error: "Invalid city parameter provided."
+        '401':
+          description: Unauthorized - Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Unauthorized Access
+                  value:
+                    message: "Unauthorized"
+                    error: "Missing or invalid JWT token."
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Forbidden Access
+                  value:
+                    message: "Forbidden"
+                    error: "User does not have the required role."
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                serverError:
+                  summary: Server Error
+                  value:
+                    message: "An unexpected error occurred."
+                    error: "Detailed error message."
 
 tags:
   - name: Authentication
     description: Endpoints related to user registration and authentication.
-  - name: Bookings
-    description: Endpoints related to booking management.
   - name: Listings
     description: Endpoints related to listing management.
   - name: Reviews
