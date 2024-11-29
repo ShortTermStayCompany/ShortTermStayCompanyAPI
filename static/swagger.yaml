@@ -4,8 +4,8 @@ info:
   description: API for user registration, authentication, listing management, booking, reviews, and reporting.
   version: 1.0.1
 servers:
-  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net
-    description: Azure server
+  - url: https://stsc-a3hefkewerhsfads.uaenorth-01.azurewebsites.net/v1
+    description: Azure server - Version 1
 
 security:
   - bearerAuth: []
