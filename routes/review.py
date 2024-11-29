@@ -7,7 +7,7 @@ from sqlalchemy import and_
 
 review_bp = Blueprint('review', __name__)
 
-@review_bp.route('/v1/insert_review', methods=['POST'])
+@review_bp.route('/insert_review', methods=['POST'])
 @jwt_required()
 @require_role('guest')
 def insert_review():
